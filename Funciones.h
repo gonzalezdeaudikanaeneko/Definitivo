@@ -11,6 +11,9 @@
 #include "Cuenta.h"
 #include <stdlib.h>
 #include "Banco.h"
+#include <iostream>
+#include <string>
+#include <fstream>
 
 #ifndef FUNCIONES_H_
 #define FUNCIONES_H_
@@ -31,5 +34,9 @@ using namespace std;
 	void crearCuenta(int cuenta, list<Cuenta*>* cu);
 	void almacenarCuentaBD(Cuenta* c);
 	void createTable();
+	Cuenta* getTableDataNoticia(char* query);
+	void LeerFichero();
+	void almacenarBD(Cuenta ct[]);
+	void mostrarCuenta(Cuenta* n) ;
 
 #endif /* FUNCIONES_H_ */

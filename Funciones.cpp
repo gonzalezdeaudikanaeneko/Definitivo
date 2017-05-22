@@ -19,7 +19,9 @@
 #include <iostream>
 #include <sstream>
 #include <typeinfo>
-
+#include <iostream>
+#include <string>
+#include <fstream>
 using namespace std;
 FILE *doc;
 
@@ -35,18 +37,18 @@ char mostrarMenu() {
 	fflush(stdin);
 	return resultado;
 }
-char mostrarMenuTrabajador(){
+char mostrarMenuTrabajador() {
 	printf("Trabajador>\n"
 			"MENU PRINCIPAL\n"
-				"1.\tDirector\n"
-				"2.\tAdministrador de cuentas\n"
-				"3.\tSalir\n\n"
-				"Introduzca numero de la funcion deseada:\n");
-		fflush(stdout);
-		char resultado;
-		resultado = getchar();
-		fflush(stdin);
-		return resultado;
+			"1.\tDirector\n"
+			"2.\tAdministrador de cuentas\n"
+			"3.\tSalir\n\n"
+			"Introduzca numero de la funcion deseada:\n");
+	fflush(stdout);
+	char resultado;
+	resultado = getchar();
+	fflush(stdin);
+	return resultado;
 }
 
 char mostrarMenuCliente() {
@@ -68,15 +70,13 @@ char mostrarMenuAdmin() {
 			"1.\tAñadir Cuenta\n"
 			"2.\tEliminar Cuenta\n"
 			"3.\tMovimiento de saldo\n"
-			"4.\tMostrar datos de un cuenta\n"
-			"5.\tMostrar todas las cuentas\n\n"
-			"6.\tSalir\n\n"
+			//"4.\tMostrar datos de un cuenta\n"
+			"4.\tSalir\n\n"
 			"Introduzca numero de la funcion deseada:\n");
 	fflush(stdout);
 	char resultado;
 	resultado = getchar();
 	fflush(stdin);
-	if(resultado==1 || resultado)
 	return resultado;
 }
 char mostrarMenuDirector() {
@@ -93,13 +93,17 @@ char mostrarMenuDirector() {
 }
 
 void mostrarCuenta(Cuenta* n) {
-	printf("DNI del titular de la Cuenta: %s\n", n->getNumeroId());
+	printf("ID de la Cuenta: %i\n", n->getID());
+	fflush(stdout);
+	printf("DNI del titular de la Cuenta: %i\n", n->getNumeroId());
 	fflush(stdout);
 	printf("Nombre del titular de la Cuenta: %s\n", n->getNombre());
 	fflush(stdout);
-	printf("Numero de la cuenta: %i\n", n->getID());
+	printf("Contraseña de la cuenta: %s\n", n->getContrasena());
 	fflush(stdout);
 	printf("Cantidad de saldo: %i\n", n->getLiquidacion());
+	fflush(stdout);
+	printf("Deudas de la Cuenta: %i\n", n->getDe());
 	fflush(stdout);
 }
 
@@ -146,8 +150,8 @@ int callback(void *NotUsed, int argc, char **argv, char **azColName) {
 }
 void crearCuenta(int cuenta, list<Cuenta*>* cu) {
 
-		cu->push_back(nuevaCuenta());
-		almacenarEnBD(cu);
+	cu->push_back(nuevaCuenta());
+	almacenarEnBD(cu);
 }
 Cuenta* nuevaCuenta() {
 
@@ -237,73 +241,12 @@ Cuenta* get(list<Cuenta*>* _list, int _i) {
 	}
 	return *it;
 }
-void almacenarCuentaBD(Cuenta* c) {
+void almacenarEnBD(list<Cuenta*>* cu) {
 	sqlite3* db;
 	int rc;
 	char *zErrMsg = 0;
 	//conectarBD();
-
 	rc = sqlite3_open("Cuentas.s3db", &db);
-
-	if (rc) {
-		//cambiar stderr por stdout para mostrar por consola
-		fprintf(stdout, "Error al abrir BD: %s\n", sqlite3_errmsg(db));
-		exit(0);
-	} else {
-		fprintf(stdout, "Base de datos abierta exitosamente\n");
-	}
-
-	int Number = c->getLiquidacion();//number to convert int a string
-	string Result;//string which will contain the result
-
-	stringstream convert; // stringstream used for the conversion
-
-	convert << Number;//add the value of Number to the characters in the stream
-
-	Result = convert.str();//set Result to the content of the stream
-
-	int Number1 = c->getNumeroId();//number to convert int a string
-	string Result1;//string which will contain the result
-
-	stringstream convert1; // stringstream used for the conversion
-
-	convert1 << Number1;//add the value of Number to the characters in the stream
-
-	Result1 = convert1.str();//set Result to the content of the stream
-
-	int Number2 = c->getID();//number to convert int a string
-	string Result2;//string which will contain the result
-
-	stringstream convert2; // stringstream used for the conversion
-
-	convert2 << Number2;//add the value of Number to the characters in the stream
-
-	Result2 = convert2.str();//set Result to the content of the stream
-
-	string sql = "";
-//	string sql2 = "INSERT INTO CUENTAS (N_IDENT,NOMBRE,CONTRA,ID_CUENTA_SUELDO)VALUES ('" + c.getNumeroId()
-//			+ "', 'Lector Rss C++/src/" + nombreRSS + ".xml');";
-	string sql2 = "INSERT INTO CUENTAS (N_IDENT,NOMBRE,CONTRA,ID_CUENTA,SUELDO)VALUES ('" + Result1 +
-			"','" + c->getNombre() + "','" + c->getContrasena()+ "','" + Result2  + "','" +Result+"');";
-
-	const char *csql2 = sql2.c_str();
-	rc = sqlite3_exec(db, csql2, callback, 0, &zErrMsg);
-
-	if (rc != SQLITE_OK) {
-		fprintf(stdout, "SQL error: %s\n", zErrMsg);
-		sqlite3_free(zErrMsg);
-	} else {
-		fprintf(stdout, "XML creado\n");
-	}
-
-	cerrarBD(db);
-}
-void almacenarEnBD(list<Cuenta*>* noticias) {
-	sqlite3* db;
-	int rc;
-	char *zErrMsg = 0;
-	//conectarBD();
-	rc = sqlite3_open("xmlbd.s3db", &db);
 	if (rc) {
 		//cambiar stderr por stdout para mostrar por consola
 		fprintf(stdout, "Error al abrir BD: %s\n", sqlite3_errmsg(db));
@@ -314,13 +257,14 @@ void almacenarEnBD(list<Cuenta*>* noticias) {
 	string sql = "";
 	unsigned int i;
 
-	for (i = 0; i < noticias->size(); i++) {
+	for (i = 0; i < cu->size(); i++) {
 
-		Cuenta* c1 = get(noticias, i);
+		Cuenta* c1 = get(cu, i);
 		char* nombre = c1->getNombre();
 		char* nIdent = (char*) c1->getNumeroId();
 
-		sql.append("INSERT INTO CUENTAS (N_IDENT,NOMBRE,CONTRASEÑA,SUELDO,DEUDA) VALUES ( ");
+		sql.append(
+				"INSERT INTO CUENTAS (N_IDENT,NOMBRE,CONTRASEÑA,SUELDO,DEUDA) VALUES ( ");
 		sql.append(nIdent);
 		sql.append(", '");
 		sql.append(nombre);
@@ -329,7 +273,7 @@ void almacenarEnBD(list<Cuenta*>* noticias) {
 		sql.append("', ");
 		sql.append((char*) c1->getLiquidacion());
 		sql.append(", '");
-		sql.append((char*)c1->getDe());
+		sql.append((char*) c1->getDe());
 		sql.append(");");
 
 	}
@@ -344,62 +288,386 @@ void almacenarEnBD(list<Cuenta*>* noticias) {
 	cerrarBD(db);
 }
 
-void createTable(){
+void createTable() {
 	sqlite3 *db;
-		char *zErrMsg = 0;
-		int  rc;
-		char *sql;
+	char *zErrMsg = 0;
+	int rc;
+	char *sql;
 
-		const char* data = "Callback function called";
+	const char* data = "Callback function called";
 
-
-		/* Open database */
-		rc = sqlite3_open("Cuentas.s3db", &db);
-		if( rc ){
+	/* Open database */
+	rc = sqlite3_open("Cuentas.s3db", &db);
+	if (rc) {
 		fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));
-		}else{
+	} else {
 		fprintf(stdout, "Opened database successfully\n");
-		}
-		/* Create SQL statement */
-		sql = "CREATE TABLE CUENTA("  \
-		"ID_CUENTA   INT PRIMARY KEY     NOT NULL," \
-		"NOMBRE           VARCHAR(20)    NOT NULL," \
-		"CONTRASENA       VARCHAR(20)   NOT NULL," \
-		"DNI            INT     NOT NULL," \
-		"SUELDO        INT," \
-		"DEUDAS         INT );";
+	}
+	/* Create SQL statement */
+	sql = "CREATE TABLE CUENTA("
+			"ID_CUENTA   INT PRIMARY KEY     NOT NULL,"
+			"NOMBRE           VARCHAR(20)    NOT NULL,"
+			"CONTRASENA       VARCHAR(20)   NOT NULL,"
+			"DNI            INT     NOT NULL,"
+			"SUELDO        INT,"
+			"DEUDAS         INT );";
 
-		/* Execute SQL statement */
-		rc = sqlite3_exec(db, sql, callback, 0, &zErrMsg);
-		if( rc != SQLITE_OK ){
+	/* Execute SQL statement */
+	rc = sqlite3_exec(db, sql, callback, 0, &zErrMsg);
+	if (rc != SQLITE_OK) {
 		fprintf(stderr, "SQL error: %s\n", zErrMsg);
 		sqlite3_free(zErrMsg);
-		}else{
+	} else {
 		fprintf(stdout, "Table created successfully\n");
-		}
-		sqlite3_close(db);
+	}
+	sqlite3_close(db);
 
-		/* Open database */
-		rc = sqlite3_open("Cuentas.s3db", &db);
-		if( rc ){
-		  fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));
-		}else{
-		  fprintf(stderr, "Opened database successfully\n");
-		}
+	/* Open database */
+	rc = sqlite3_open("Cuentas.s3db", &db);
+	if (rc) {
+		fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));
+	} else {
+		fprintf(stderr, "Opened database successfully\n");
+	}
 
-		/* Create SQL statement */
-		sql = "INSERT INTO CUENTA (ID_CUENTA,NOMBRE,CONTRASENA,DNI,SUELDO,DEUDAS) "  \
-			 "VALUES (1, ' ', '32', 111, 20000, 0); " \
-			 "INSERT INTO CUENTA (ID_CUENTA,NOMBRE,CONTRASENA,DNI,SUELDO,DEUDAS)" \
-			 "VALUES (4, 'Mark', '25', 444, 65000, 1000);";
+	/* Create SQL statement */
+	sql = "INSERT INTO CUENTA (ID_CUENTA,NOMBRE,CONTRASENA,DNI,SUELDO,DEUDAS) "
+			"VALUES (1, 'Peter ', '32', 111, 20000, 0); "
+			"INSERT INTO CUENTA (ID_CUENTA,NOMBRE,CONTRASENA,DNI,SUELDO,DEUDAS)"
+			"VALUES (4, 'Mark', '25', 444, 65000, 1000);";
 
-		/* Execute SQL statement */
-		rc = sqlite3_exec(db, sql, callback, 0, &zErrMsg);
-		if( rc != SQLITE_OK ){
-		  fprintf(stderr, "SQL error: %s\n", zErrMsg);
-		  sqlite3_free(zErrMsg);
-		}else{
-		  fprintf(stdout, "Records created successfully\n");
-		}
-		sqlite3_close(db);
+	/* Execute SQL statement */
+	rc = sqlite3_exec(db, sql, callback, 0, &zErrMsg);
+	if (rc != SQLITE_OK) {
+		fprintf(stderr, "SQL error: %s\n", zErrMsg);
+		sqlite3_free(zErrMsg);
+	} else {
+		fprintf(stdout, "Records created successfully\n");
+	}
+	sqlite3_close(db);
 }
+Cuenta* getTableDataNoticia(char* query) {
+	sqlite3_stmt *statement;
+	sqlite3* db;
+	int rc;
+	Cuenta* n = new Cuenta();
+	const char* csql22;
+	char* csql33;
+	rc = sqlite3_open("Cuentas.s3db", &db);
+
+	if (rc) {
+		//cambiar stderr por stdout para mostrar por consola
+		fprintf(stdout, "Error al abrir BD: %s\n", sqlite3_errmsg(db));
+		exit(0);
+	} else {
+		fprintf(stdout, "Base de datos abierta exitosamente\n");
+	}
+
+	if (sqlite3_prepare(db, query, -1, &statement, 0) == SQLITE_OK) {
+		int ctotal = sqlite3_column_count(statement);
+		int res = 0;
+
+		while (1) {
+			res = sqlite3_step(statement);
+
+			if (res == SQLITE_ROW) {
+
+				for (int i = 0; i < ctotal; i++) {
+
+					string s = (char*) sqlite3_column_text(statement, i);
+					// print or format the output as you want
+
+					switch (i) {
+					case 0:
+						n->setID(atoi(s.c_str()));
+						break;
+					case 1:
+						csql22 = s.c_str();
+						csql33 = (char*) csql22;
+						n->setNombre(csql33);
+						break;
+					case 2:
+						csql22 = s.c_str();
+						csql33 = (char*) csql22;
+						n->setContrasena(csql33);
+						break;
+					case 3:
+						n->setNumeroId(atoi(s.c_str()));
+						break;
+					case 4:
+						n->setLiquidacion(atoi(s.c_str()));
+						break;
+					case 5:
+						n->setDe(atoi(s.c_str()));
+						break;
+					default:
+						break;
+					}
+				}
+			}
+
+			if (res == SQLITE_DONE || res == SQLITE_ERROR) {
+				cout << "done " << endl;
+				break;
+			}
+		}
+
+	}
+	mostrarCuenta(n);
+	return n;
+}
+
+//void LeerFichero(list<Cuenta*>* cu) {
+//	char* aa;
+//	const char* aaa;
+//	int i, a;
+//	cout << "Escriba el nombre del archivo a leer: " << endl;
+//	string filename;
+//	cin >> filename;
+//	ifstream file(filename.c_str());
+//	if (!file) {
+//		cout << "Error no se puede abrir el archivo: " << filename << endl;
+//	}
+//	string linea, archivo;
+//	string arch;
+//
+//	Cuenta c;
+//	while (getline(file, linea)) {
+//
+//		i = 0;
+//		a = 0;
+//		aaa = linea.c_str(); //de string a const char*
+//		aa = const_cast<char *>(aaa); //Castea de const char* a char*
+//
+//		for (i = 0; a != 6; i++) {
+//
+//			do {
+//				do {
+//					arch[i] = aa[i];
+//					i++;
+//				} while (aa[i] != ' ');
+//
+//				if (a == 0) {	//DNI
+//					const char * a = arch.c_str();
+//					int l = atoi(a);
+//					c.setNumeroId(l);
+//					arch = "";
+//				}
+//				if (a == 1) {	//Nombre
+//					char *a = strdup(arch.c_str());	//convierte de string a char*
+//					c.setNombre(a);
+//					arch = "";
+//				}
+//				if (a == 2) {		//Contrasenya
+//					char *a = strdup(arch.c_str());
+//					//char* a = (char*)arch;
+//					c.setContrasena(a);
+//				}
+//				if (a == 3)		//Numero de cuenta
+//						{
+//					const char * a = arch.c_str();
+//					int l = atoi(a);
+//					c.setID(l);
+//					arch = "";
+//				}
+//				if (a == 4) {		//Liquidez
+//					const char * a = arch.c_str();
+//					int l = atoi(a);
+//					c.setLiquidacion(l);
+//					arch = "";
+//				}
+//				if (a == 5) {
+//					c.setDe(0);
+//					arch = "";
+//				}
+//				a++;
+//			} while (a != 6);
+//
+//			string asd;
+//			asd =
+//					"INSERT INTO CUENTA (ID_CUENTA,NOMBRE,CONTRASENA,DNI,SUELDO,DEUDAS) ";
+//			asd.append("VALUES (");
+//			asd.append((char*) c.getNumeroId());
+//			asd.append(", '");
+//			asd.append(c.getNombre());
+//			asd.append("', '");
+//			asd.append(c.getContrasena());
+//			asd.append("', ");
+//			asd.append((char*) c.getID());
+//			asd.append(", ");
+//			asd.append((char*) c.getLiquidacion());
+//			asd.append(", ");
+//			asd.append((char*) c.getDe());
+//			asd.append(");");
+//
+//			const char *csql2 = asd.c_str();
+//			char *csql3 = (char*) csql2;
+//
+//			ejecutarComandoBD(csql3);
+//
+//		}
+//	}
+//}
+void LeerFichero() {
+	char *str;
+	string ar, ar1, ar2, ar3, ar4, ar5;
+	char* aa;
+	const char* aaa;
+	int i = 0, a = 0;
+	cout << "Escriba el nombre del archivo a leer: " << endl;
+	string filename;
+	cin >> filename;
+	ifstream file(filename.c_str());
+	if (!file) {
+		cout << "Error no se puede abrir el archivo: " << filename << endl;
+	}
+	string linea, archivo;
+	string arch;
+
+	Cuenta *c;
+	while (getline(file, linea)) {
+		a = 0;
+		aaa = linea.c_str(); //de string a const char*
+		aa = const_cast<char *>(aaa); //Castea de const char* a char*
+		for (i = 0; a != 6; i++) {
+			//free(c);
+			//Cuenta *c;
+			//si no deja pasar a char* la linea
+			do {
+				do {
+					arch[i] = aa[i];
+					i++;
+				} while (aa[i] != ' ');
+
+				if (a == 0) {	//DNI
+					const char * a = arch.c_str();
+					int l = atoi(a);
+					c->setNumeroId(l);
+					ar = arch;
+				}
+				if (a == 1) {	//Nombre
+					char *a = strdup(arch.c_str());	//convierte de string a char*
+					c->setNombre(a);
+					ar1 = arch;
+				}
+				if (a == 2) {		//Contrasenya
+					char *a = strdup(arch.c_str());
+					c->setContrasena(a);
+					ar2 = arch;
+				}
+				if (a == 3)		//Numero de cuenta
+						{
+					const char * a = arch.c_str();
+					int l = atoi(a);
+					c->setID(l);
+					ar3 = arch;
+				}
+				if (a == 4) {		//Liquidez
+					const char * a = arch.c_str();
+					int l = atoi(a);
+					c->setLiquidacion(l);
+					ar4 = arch;
+				}
+				if (a == 5) {
+					const char * a = arch.c_str();
+					int l = atoi(a);
+					c->setDe(l);
+					ar5 = arch;
+
+					char *a00 = strdup(ar.c_str());
+					char *a03 = strdup(ar3.c_str());
+					char *a04 = strdup(ar4.c_str());
+					char *a05 = strdup(ar5.c_str());
+
+					string asd;
+					asd =
+							"INSERT INTO CUENTA (ID_CUENTA,NOMBRE,CONTRASENA,DNI,SUELDO,DEUDAS) ";
+					asd.append("VALUES (");
+					asd.append(a00);
+					asd.append(", '");
+					asd.append(ar1);
+					asd.append("', '");
+					asd.append(ar2);
+					asd.append("', ");
+					asd.append(a03);
+					asd.append(", ");
+					asd.append(a04);
+					asd.append(", ");
+					asd.append(a05);
+					asd.append(");");
+
+					const char *csql2 = asd.c_str();
+					char *csql3 = (char*) csql2;
+
+					ejecutarComandoBD(csql3);
+				}
+				a++;
+			} while (a <= 5);
+		}
+
+	}
+}
+//void almacenarBD(Cuenta ct[]){
+//
+//	sqlite3* db;
+//		int rc;
+//		char *zErrMsg = 0;
+//		//conectarBD();
+//
+//		rc = sqlite3_open("Cuentas.s3db", &db);
+//
+//		if (rc) {
+//			//cambiar stderr por stdout para mostrar por consola
+//			fprintf(stdout, "Error al abrir BD: %s\n", sqlite3_errmsg(db));
+//			exit(0);
+//		} else {
+//			fprintf(stdout, "Base de datos abierta exitosamente\n");
+//		}
+//
+//
+//		string sql = "";
+//		string sql2 = "INSERT INTO XML (NOM_XML, RUTA)VALUES ('" + nombreRSS
+//				+ "', 'Lector Rss C++/src/" + nombreRSS + ".xml');";
+//
+////		const char *csql2 = sql2.c_str();
+////		rc = sqlite3_exec(db, csql2, callback, 0, &zErrMsg);
+////
+////		if (rc != SQLITE_OK) {
+////			fprintf(stdout, "SQL error: %s\n", zErrMsg);
+////			sqlite3_free(zErrMsg);
+////		} else {
+////			fprintf(stdout, "XML creado\n");
+////		}
+////		int a;
+////		a = getTableDataID(
+////				(char*) ("SELECT COD_XML FROM XML WHERE NOM_XML LIKE '" + nombreRSS
+////						+ "';").c_str());
+////
+////		unsigned int i;
+////
+////		string result;
+////
+////		ostringstream convert;
+////
+////		convert << a;
+////
+////		result = convert.str();
+//
+//		for (i = 0; i < 50; i++) {
+//
+//			sql += "INSERT INTO NOTICIA (TITULO,AUTOR,DESC, COD_XML)VALUES ( '"
+//					+ get(noticias, i)->getTitulo() + "', '"
+//					+ get(noticias, i)->getAutor() + "', '"
+//					+ get(noticias, i)->getDescripcion() + "'," + result + ");";
+//		}
+//		const char *csql = sql.c_str();
+//		rc = sqlite3_exec(db, csql, callback, 0, &zErrMsg);
+//		if (rc != SQLITE_OK) {
+//			fprintf(stderr, "SQL error: %s\n", zErrMsg);
+//			sqlite3_free(zErrMsg);
+//		} else {
+//			fprintf(stdout, "Noticias insertadas\n");
+//		}
+//		cerrarBD(db);
+//
+//}

@@ -10,7 +10,6 @@
 #include "sqlite3.h"
 
 #include "Cuenta.h"
-#include "Banco.h"
 #include "Usuario.h"
 #include "Trabajador.h"
 #include "Director.h"
@@ -36,11 +35,12 @@ using namespace std;
 
 int main(void) {
 
+	Cuenta ct[20];
 	createTable();
 	char funcMenu, menuT, menuA, menuD, menuC;
 	bool repetir;
-	char nombre[20];
-	string statement,statement2;
+	char nombre[20], nombre1[20], nombre2[20];
+	string statement, statement2;
 	string result;
 	char *csql3, *csql33;
 	const char *csql2, *csql22;
@@ -49,11 +49,15 @@ int main(void) {
 	char nom2[20];
 	char nom3[30];
 	fflush(stdin);
+
+	LeerFichero();
+
 	do { //
+		fflush(stdin);
 		repetir = true;
 		funcMenu = mostrarMenu();
 		switch (funcMenu) {
-		case '1': {
+		case '1':
 			menuT = mostrarMenuTrabajador();
 			switch (menuT) {
 			case '1': {
@@ -67,7 +71,8 @@ int main(void) {
 					fflush(stdout);
 					scanf("%s", nom1);
 
-					statement =	"UPDATE CUENTA SET SUELDO = (SELECT SUELDO FROM CUENTA WHERE ID_CUENTA = ";
+					statement =
+							"UPDATE CUENTA SET SUELDO = (SELECT SUELDO FROM CUENTA WHERE ID_CUENTA = ";
 					statement.append(nom);
 					statement.append(")+");
 					statement.append(nom1);
@@ -78,7 +83,8 @@ int main(void) {
 					csql2 = statement.c_str();
 					csql3 = (char*) csql2;
 
-					statement2 =	"UPDATE CUENTA SET DEUDAS = (SELECT DEUDAS FROM CUENTA WHERE ID_CUENTA = ";
+					statement2 =
+							"UPDATE CUENTA SET DEUDAS = (SELECT DEUDAS FROM CUENTA WHERE ID_CUENTA = ";
 					statement2.append(nom);
 					statement2.append(") + ");
 					statement2.append(nom1);
@@ -97,7 +103,7 @@ int main(void) {
 				}
 			}
 				break;
-			case '2': {
+			case '2':
 				menuA = mostrarMenuAdmin();
 				switch (menuA) {
 				case '1': { //Añadir cuenta
@@ -150,33 +156,61 @@ int main(void) {
 					break;
 				case '3': //mover saldo
 					//b.transaccion(CB, 123, 123, 350);
-					break;
-				case '4':						//MOstra 1
-					printf("Introduce N_IDENT de la Cuenta: \n");
+					printf("Introduce ID de la Cuenta 1: \n");
 					fflush(stdout);
 					scanf("%s", nombre);
-					fflush(stdin);
-					printf("%s", nombre);
-					statement = "SELECT * from CUENTAS where N_IDENT like '";
+					printf("Introduce ID de la Cuenta 2: \n");
+					fflush(stdout);
+					scanf("%s", nombre1);
+					printf("Introduce el total: \n");
+					fflush(stdout);
+					scanf("%s", nombre2);
+
+					statement =	"UPDATE CUENTA SET SUELDO = (SELECT SUELDO FROM CUENTA WHERE ID_CUENTA = ";
 					statement.append(nombre);
-					statement.append("';");
+					statement.append(")-");
+					statement.append(nombre2);
+					statement.append(" WHERE ID_CUENTA = ");
+					statement.append(nombre);
+					statement.append(";");
+
 					csql2 = statement.c_str();
 					csql3 = (char*) csql2;
-					ejecutarComando(csql3);
-					printf("\n");
+
+					ejecutarComandoBD(csql3);
+
+
+					statement2 =	"UPDATE CUENTA SET SUELDO = (SELECT SUELDO FROM CUENTA WHERE ID_CUENTA = ";
+					statement2.append(nombre1);
+					statement2.append(")+");
+					statement2.append(nombre2);
+					statement2.append(" WHERE ID_CUENTA = ");
+					statement2.append(nombre1);
+					statement2.append(";");
+
+					csql22 = statement2.c_str();
+					csql33 = (char*) csql22;
+
+
+					ejecutarComandoBD(csql33);
+
 					break;
-				case '5':						//Mostrar todas
-					statement = "SELECT * from XML;";
-					csql2 = statement.c_str();
-					csql3 = (char*) csql2;
-					ejecutarComando(csql3);
-					break;
-				case '6':						//salir
-					break;
+//				case '4'://MOstra 1
+//					printf("Introduce N_IDENT de la Cuenta: \n");
+//					fflush(stdout);
+//					scanf("%s", nombre);
+//					statement = "SELECT * from CUENTAS where N_IDENT=";
+//					statement.append(nombre);
+//					statement.append(";");
+//					csql2 = statement.c_str();
+//					csql3 = (char*) csql2;
+//					getTableDataNoticia(csql3);
+//					printf("\n");
+//					break;
 				default:
 					break;
 				}
-			}
+
 				break;
 			case '3': {
 				printf("Saliendo ...");
@@ -186,7 +220,7 @@ int main(void) {
 				printf("Opcion incorrecta!\n\n");
 				break;
 			}
-		}
+
 			break;
 		case '2': {
 			menuC = mostrarMenuCliente();

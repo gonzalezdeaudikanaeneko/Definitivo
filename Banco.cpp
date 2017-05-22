@@ -172,14 +172,13 @@ list<Cuenta*>* Banco::LeerFichero() {
 //    }
 	Cuenta *c;
 	list<Cuenta*>* users;
+	Cuenta cuentastxt[100];
 	while (getline(file, linea)) {
 		a=0;
 		aaa = linea.c_str(); //de string a const char*
 		aa = const_cast<char *>(aaa);//Castea de const char* a char*
 		for (i = 0; a!=5; i++) {
-			//free(c);
-			//Cuenta *c;
-			//si no deja pasar a char* la linea
+
 			do{
 				do {
 					arch[i] = aa[i];
